@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Ilmiah</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #ffffff, #eaeaea);
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background: #121212;
+      color: #fff;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding-top: 60px;
+      position: relative;
+    }
+    .calculator {
+      background-color: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 360px;
+      position: relative;
+      z-index: 1;
+      transition: background 0.3s;
+    }
+    body.dark-mode .calculator {
+      background-color: #1e1e1e;
+    }
+    .menu-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      font-size: 16px;
+      background: #ccc;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      text-align: center;
+    }
+    #display {
+      width: 100%;
+      height: 60px;
+      font-size: 28px;
+      text-align: right;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background-color: #f5f5f5;
+      margin-bottom: 15px;
+    }
+    body.dark-mode #display {
+      background-color: #333;
+      color: #fff;
+    }
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background-color: #ffffff;
+      color: #000;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.3s;
+    }
+    button:hover {
+      background-color: #f0f0f0;
+    }
+    button.operator {
+      background-color: #ffa500;
+      color: white;
+    }
+    body.dark-mode button {
+      background-color: #444;
+      color: #fff;
+    }
+    body.dark-mode button.operator {
+      background-color: #ff9500;
+      color: #fff;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 240px;
+      height: 100%;
+      background-color: #fff;
+      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 2;
+    }
+    body.dark-mode .sidebar {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+    .sidebar.show {
+      left: 0;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      padding: 10px 0;
+      cursor: pointer;
+    }
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0);
+      display: none;
+      z-index: 1;
+    }
+    #overlay.show {
+      display: block;
+    }
+    #help-page,
+    #history-page {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #fff;
+      padding: 20px;
+      z-index: 3;
+      overflow-y: auto;
+    }
+    body.dark-mode #help-page,
+    body.dark-mode #history-page {
+      background-color: #121212;
+      color: #fff;
+    }
+    #help-page h2,
+    #history-page h2 {
+      margin-top: 0;
+    }
+    #back-btn {
+      margin-top: 20px;
+      padding: 10px;
+      background: #ccc;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .history-entry {
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <button class="menu-btn" onclick="toggleMenu(true)">≡</button>
+  <div id="sidebar" class="sidebar">
+    <h3>Menu</h3>
+    <ul>
+      <li onclick="toggleDarkMode()">🌙 Tema Gelap</li>
+      <li onclick="toggleScientificMode()">🧠 Mode Ilmiah</li>
+      <li onclick="showHistoryPage()">🕓 Riwayat</li>
+      <li onclick="showHelpPage()">❓ Bantuan</li>
+    </ul>
+  </div>
+
+  <div id="overlay" onclick="toggleMenu(false)"></div>
+
+  <div class="container">
+    <div class="calculator">
+      <input type="text" id="display" disabled>
+      <div class="button-grid" id="button-grid">
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="backspace()">⌫</button>
+        <button onclick="append('(')">(</button>
+        <button onclick="append(')')">)</button>
+        <button onclick="append('7')">7</button>
+        <button onclick="append('8')">8</button>
+        <button onclick="append('9')">9</button>
+        <button onclick="append('/')" class="operator">÷</button>
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button onclick="append('*')" class="operator">×</button>
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+        <button onclick="append('-')" class="operator">−</button>
+        <button onclick="append('%')">%</button>
+        <button onclick="append('0')">0</button>
+        <button onclick="append('.')">,</button>
+        <button onclick="append('+')" class="operator">+</button>
+        <button onclick="calculate()" class="operator" style="grid-column: span 4">=</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="help-page">
+    <h2>Bantuan Penggunaan</h2>
+    <p>Gunakan tombol untuk memasukkan angka dan operator. Menu samping menyediakan:</p>
+    <ul>
+      <li>Tema Gelap</li>
+      <li>Mode Ilmiah</li>
+      <li>Riwayat Perhitungan</li>
+    </ul>
+    <button id="back-btn" onclick="hidePages()">Kembali</button>
+  </div>
+
+  <div id="history-page">
+    <h2>Riwayat Perhitungan</h2>
+    <div id="history-list"></div>
+    <button id="back-btn" onclick="hidePages()">Kembali</button>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const historyList = document.getElementById('history-list');
+    const helpPage = document.getElementById('help-page');
+    const historyPage = document.getElementById('history-page');
+    const buttonGrid = document.getElementById('button-grid');
+    let scientificMode = false;
+    let history = [];
+
+    function append(val) {
+      display.value += val;
+    }
+    function clearDisplay() {
+      display.value = '';
+    }
+    function backspace() {
+      display.value = display.value.slice(0, -1);
+    }
+    function calculate() {
+      try {
+        const expr = display.value;
+        const result = eval(expr.replace(',', '.'));
+        history.push(expr + ' = ' + result);
+        display.value = result;
+        saveHistory();
+      } catch {
+        display.value = 'Error';
+      }
+    }
+    function toggleMenu(open) {
+      if (open) {
+        sidebar.classList.add('show');
+        overlay.classList.add('show');
+      } else {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+      }
+    }
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      toggleMenu(false);
+    }
+    function toggleScientificMode() {
+      if (!scientificMode) {
+        const sci = `
+          <button onclick=\"append('Math.sin(')\">sin</button>
+          <button onclick=\"append('Math.cos(')\">cos</button>
+          <button onclick=\"append('Math.tan(')\">tan</button>
+          <button onclick=\"append('Math.sqrt(')\">√</button>
+        `;
+        buttonGrid.insertAdjacentHTML('afterbegin', sci);
+      } else {
+        for (let i = 0; i < 4; i++) buttonGrid.children[0].remove();
+      }
+      scientificMode = !scientificMode;
+      toggleMenu(false);
+    }
+    function showHelpPage() {
+      helpPage.style.display = 'block';
+      toggleMenu(false);
+    }
+    function showHistoryPage() {
+      historyPage.style.display = 'block';
+      renderHistory();
+      toggleMenu(false);
+    }
+    function hidePages() {
+      helpPage.style.display = 'none';
+      historyPage.style.display = 'none';
+    }
+    function saveHistory() {
+      localStorage.setItem('calc-history', JSON.stringify(history));
+    }
+    function loadHistory() {
+      const data = localStorage.getItem('calc-history');
+      if (data) history = JSON.parse(data);
+    }
+    function renderHistory() {
+      historyList.innerHTML = '';
+      history.slice().reverse().forEach(entry => {
+        const div = document.createElement('div');
+        div.className = 'history-entry';
+        div.textContent = entry;
+        historyList.appendChild(div);
+      });
+    }
+
+    loadHistory();
+  </script>
+</body>
+</html>
